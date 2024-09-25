@@ -89,6 +89,28 @@ resource "aws_instance" "windows_server" {
     Name = "windows-server"
   }
 
+# Use user_data to install Python, Java, and run a Python script
+  user_data = <<-EOF
+    <powershell>
+    # Install Chocolatey - Windows package manager
+    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+   
+    # Install Python
+    choco install python -y
+   
+    # Install Java
+    choco install jdk8 -y
+   
+    # Create a Python script
+    New-Item -Path C:\\scripts -ItemType Directory
+    Set-Content -Path C:\\scripts\\simple_math.py -Value 'print("Sum of 5 + 3 =", 5 + 3)'
+   
+    # Run the Python script
+    python C:\\scripts\\simple_math.py > C:\\scripts\\output.txt
+    </powershell>
+  EOF
+ 
+
   # Optional: Key pair for SSH access
   key_name = "us-east-1-KP" # Update with your key pair name
 
